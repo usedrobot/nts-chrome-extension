@@ -542,6 +542,12 @@ function formatAlias(alias) {
   return (alias || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function formatBroadcastDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 async function fetchShowEpisodes(alias) {
   try {
     const res = await fetch(`${NTS_API}/shows/${alias}/episodes?offset=0&limit=12`);
@@ -578,7 +584,8 @@ async function expandShowEpisodes(parentEl, showAlias, showTitle, showArt) {
     epEl.innerHTML = `
       <div class="episode-info">
         <div class="episode-title">${esc(ep.name || ep.broadcast_title || showTitle)}</div>
-        <div class="episode-date">${esc(ep.local_date || '')}</div>
+        <div class="episode-date">${esc(ep.local_date || formatBroadcastDate(ep.broadcast))}</div>
+        ${ep.genres?.length ? `<div class="episode-genres">${ep.genres.map(g => esc(g.value || g.name || '')).join(' \u00B7 ')}</div>` : ''}
       </div>
       <div class="episode-actions">
         ${scSrc ? `<button class="btn-sm btn-ep-play" title="Play">\u25B6</button>` : ''}
@@ -643,14 +650,24 @@ async function renderFollows() {
     follows.map(f => fetchShowInfo(f.show_alias))
   );
 
+  // Sort followed hosts by most recent broadcast
+  const combined = follows.map((fav, i) => ({ fav, show: showInfos[i] }));
+  combined.sort((a, b) => {
+    const aEps = a.show?.embeds?.episodes?.results || [];
+    const bEps = b.show?.embeds?.episodes?.results || [];
+    const aDate = aEps[0]?.broadcast || '';
+    const bDate = bEps[0]?.broadcast || '';
+    return bDate.localeCompare(aDate);
+  });
+
   container.innerHTML = '';
-  follows.forEach((fav, i) => {
-    const show = showInfos[i];
+  combined.forEach(({ fav, show }) => {
     const name = show?.name || formatAlias(fav.show_alias);
     const artwork = show?.media?.background_large || show?.media?.picture_large || '';
-    const episodes = show?.episodes?.results || show?.episodes || [];
+    const episodes = show?.embeds?.episodes?.results || show?.episodes?.results || [];
     const latestEp = Array.isArray(episodes) ? episodes[0] : null;
     const scSrc = latestEp?.audio_sources?.find(s => s.source === 'soundcloud');
+    const latestDate = formatBroadcastDate(latestEp?.broadcast);
 
     const el = document.createElement('div');
     el.className = 'fav-item';
@@ -658,7 +675,7 @@ async function renderFollows() {
       ${artwork ? `<img class="fav-art" src="${escAttr(artwork)}" alt="" onerror="this.style.display='none'">` : ''}
       <div class="fav-info">
         <div class="fav-title">${esc(name)}</div>
-        ${latestEp ? `<div class="fav-meta">${esc(latestEp.name || latestEp.broadcast_title || '')}</div>` : ''}
+        ${latestEp ? `<div class="fav-meta">${esc(latestEp.name || latestEp.broadcast_title || '')}${latestDate ? ` \u00B7 ${latestDate}` : ''}</div>` : ''}
       </div>
       <div class="fav-actions">
         ${scSrc ? `<button class="btn-sm btn-fav-play" title="Play latest episode">\u25B6</button>` : ''}
