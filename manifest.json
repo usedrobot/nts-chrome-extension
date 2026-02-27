@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "NTS Radio",
+  "version": "1.0.0",
+  "description": "NTS Radio side player — live streams, infinite mixtapes, and queue",
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "https://www.nts.live/*",
+    "https://stream-relay-geo.ntslive.net/*",
+    "https://stream-mixtape-geo.ntslive.net/*",
+    "https://firestore.googleapis.com/*",
+    "https://securetoken.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.nts.live/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "NTS Radio"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="sidepanel.css">
+  <title>NTS Radio</title>
+</head>
+<body>
+  <nav class="tabs">
+    <button class="tab active" data-tab="live">Live</button>
+    <button class="tab" data-tab="mixtapes">Mixtapes</button>
+    <button class="tab" data-tab="search">Search</button>
+    <button class="tab" data-tab="mynts">My NTS</button>
+  </nav>
+
+  <main class="content">
+    <section id="tab-live" class="tab-content active">
+      <div class="loading">Loading...</div>
+    </section>
+
+    <section id="tab-mixtapes" class="tab-content">
+      <div id="mixtapes-grid" class="mixtapes-grid">
+        <div class="loading">Loading...</div>
+      </div>
+    </section>
+
+    <section id="tab-search" class="tab-content">
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search shows & episodes...">
+      </div>
+      <div id="search-results"></div>
+    </section>
+
+    <section id="tab-mynts" class="tab-content">
+      <div id="auth-section"></div>
+      <div class="section-divider"></div>
+      <div id="history-section" style="display:none">
+        <div class="section-header">Recently Played</div>
+        <div id="history-list"></div>
+        <div class="section-divider"></div>
+      </div>
+      <div class="section-header">Queue</div>
+      <div id="queue-list"></div>
+      <div id="queue-empty" class="empty-state">
+        <p>Queue is empty</p>
+        <p class="hint">Add live channels, mixtapes, or archived sets</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="volume-row">
+    <svg viewBox="0 0 24 24" width="12" height="12"><path fill="#555" d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
+    <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="0.8">
+    <svg viewBox="0 0 24 24" width="12" height="12"><path fill="#555" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+  </div>
+
+  <footer class="player-bar" id="player-bar">
+    <div class="player-info">
+      <img id="player-artwork" class="player-artwork" src="" alt="" style="display:none">
+      <div class="player-text">
+        <div id="player-title" class="player-title">Not playing</div>
+        <div id="player-subtitle" class="player-subtitle"></div>
+      </div>
+    </div>
+    <div class="player-controls">
+      <button id="btn-prev" class="control-btn" title="Previous">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+      </button>
+      <button id="btn-play" class="control-btn play-btn" title="Play / Pause">
+        <svg class="icon-play" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+        <svg class="icon-pause" viewBox="0 0 24 24" width="20" height="20" style="display:none"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+      <button id="btn-next" class="control-btn" title="Next">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
