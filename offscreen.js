@@ -26,7 +26,22 @@ function playUrl(url, volume) {
   }
 }
 
-chrome.runtime.onMessage.addListener((msg) => {
+// Throttled time updates (~1/sec)
+let lastTimeUpdate = 0;
+audio.addEventListener('timeupdate', () => {
+  const now = Date.now();
+  if (now - lastTimeUpdate < 1000) return;
+  lastTimeUpdate = now;
+  const duration = audio.duration;
+  if (!duration || !isFinite(duration)) return;
+  chrome.runtime.sendMessage({
+    action: 'timeUpdate',
+    currentTime: audio.currentTime,
+    duration
+  }).catch(() => {});
+});
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.target !== 'offscreen') return;
 
   switch (msg.action) {
@@ -48,6 +63,17 @@ chrome.runtime.onMessage.addListener((msg) => {
     case 'setVolume':
       audio.volume = msg.volume;
       break;
+    case 'seek':
+      audio.currentTime = msg.time;
+      break;
+    case 'getTime': {
+      const duration = audio.duration;
+      sendResponse({
+        currentTime: audio.currentTime,
+        duration: (duration && isFinite(duration)) ? duration : 0
+      });
+      return true;
+    }
   }
 });
 

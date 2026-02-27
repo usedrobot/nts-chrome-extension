@@ -77,6 +77,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'resume': handleResume(); break;
     case 'stop': handleStop(); break;
     case 'setVolume': handleVolume(msg.volume); break;
+    case 'seek': handleSeek(msg.time); break;
+    case 'getTime':
+      handleGetTime().then(sendResponse);
+      return true;
     case 'getState':
       // Check if offscreen doc is still alive — if not, audio stopped
       chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] }).then(contexts => {
@@ -90,6 +94,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'stateUpdate':
       playerState.playing = msg.state.playing;
       broadcastState();
+      break;
+    case 'timeUpdate':
+      // Forward ephemeral time data to sidepanel (don't persist)
+      chrome.runtime.sendMessage({
+        action: 'timeUpdate',
+        currentTime: msg.currentTime,
+        duration: msg.duration
+      }).catch(() => {});
       break;
 
     // Auth
@@ -188,6 +200,20 @@ async function handleVolume(volume) {
   savePlayerState();
   await ensureOffscreen();
   chrome.runtime.sendMessage({ target: 'offscreen', action: 'setVolume', volume }).catch(() => {});
+}
+
+async function handleSeek(time) {
+  await ensureOffscreen();
+  chrome.runtime.sendMessage({ target: 'offscreen', action: 'seek', time }).catch(() => {});
+}
+
+async function handleGetTime() {
+  await ensureOffscreen();
+  try {
+    return await chrome.runtime.sendMessage({ target: 'offscreen', action: 'getTime' });
+  } catch (e) {
+    return { currentTime: 0, duration: 0 };
+  }
 }
 
 function broadcastState() {

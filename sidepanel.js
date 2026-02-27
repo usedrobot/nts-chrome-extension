@@ -13,6 +13,8 @@ let userState = { loggedIn: false, uid: null, follows: [], favEpisodes: [], hist
 let followAliases = new Map(); // show_alias -> docId
 const showCache = new Map();
 
+let seekDragging = false;
+
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
@@ -21,12 +23,14 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
   setupTabs();
   setupPlayerControls();
+  setupSeekControls();
   setupSearch();
   await loadQueue();
   await syncState();
   fetchLive();
   fetchMixtapes();
   checkAuth();
+  requestTimeSync();
 
   // Refresh live data every 60s
   setInterval(fetchLive, 60000);
@@ -37,6 +41,12 @@ async function init() {
       playerState = msg.state;
       updatePlayerBar();
       updatePlayingIndicators();
+      // Re-sync time when content changes
+      requestTimeSync();
+    } else if (msg.action === 'timeUpdate') {
+      if (!seekDragging) {
+        updateSeekBar(msg.currentTime, msg.duration);
+      }
     } else if (msg.action === 'authUpdated') {
       checkAuth();
     }
@@ -69,6 +79,46 @@ function setupPlayerControls() {
     playerState.volume = v;
     chrome.runtime.sendMessage({ action: 'setVolume', volume: v });
   });
+}
+
+function setupSeekControls() {
+  const slider = $('#seek-slider');
+  slider.addEventListener('mousedown', () => { seekDragging = true; });
+  slider.addEventListener('touchstart', () => { seekDragging = true; });
+  slider.addEventListener('change', () => {
+    seekDragging = false;
+    const time = parseFloat(slider.value);
+    chrome.runtime.sendMessage({ action: 'seek', time });
+  });
+}
+
+function updateSeekBar(currentTime, duration) {
+  const slider = $('#seek-slider');
+  const curEl = $('#seek-current');
+  const durEl = $('#seek-duration');
+  slider.max = duration;
+  slider.value = currentTime;
+  curEl.textContent = fmtDuration(currentTime);
+  durEl.textContent = fmtDuration(duration);
+}
+
+function requestTimeSync() {
+  if (playerState.type !== 'archived') return;
+  chrome.runtime.sendMessage({ action: 'getTime' }).then(res => {
+    if (res && res.duration) {
+      updateSeekBar(res.currentTime, res.duration);
+    }
+  }).catch(() => {});
+}
+
+function fmtDuration(seconds) {
+  if (!seconds || !isFinite(seconds)) return '0:00';
+  const s = Math.floor(seconds);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
 function togglePlay() {
@@ -1009,6 +1059,18 @@ function updatePlayerBar() {
   } else {
     playIcon.style.display = 'block';
     pauseIcon.style.display = 'none';
+  }
+
+  // Show seek bar only for archived content
+  const seekRow = $('#seek-row');
+  if (playerState.type === 'archived' && playerState.url) {
+    seekRow.style.display = 'flex';
+  } else {
+    seekRow.style.display = 'none';
+    // Reset when switching away from archived
+    $('#seek-slider').value = 0;
+    $('#seek-current').textContent = '0:00';
+    $('#seek-duration').textContent = '0:00';
   }
 }
 

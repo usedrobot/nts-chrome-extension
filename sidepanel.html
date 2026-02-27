@@ -75,6 +75,11 @@
         <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
       </button>
     </div>
+    <div class="seek-row" id="seek-row" style="display:none">
+      <span class="seek-time" id="seek-current">0:00</span>
+      <input type="range" id="seek-slider" class="seek-slider" min="0" max="1" step="0.001" value="0">
+      <span class="seek-time" id="seek-duration">0:00</span>
+    </div>
   </footer>
 
   <script src="sidepanel.js"></script>
