@@ -69,6 +69,10 @@ Firestore collections (`nts-ios-app` project):
 - `favourites` — Followed shows and favorited episodes
 - `archive_plays` — Listen history
 
+## Disclaimer
+
+This is an unofficial, community-built extension and is not affiliated with or endorsed by NTS Live Ltd.
+
 ## License
 
 MIT
