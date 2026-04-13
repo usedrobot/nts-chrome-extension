@@ -5,6 +5,12 @@ A Chrome side panel extension for [NTS Radio](https://www.nts.live) — listen t
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue?logo=googlechrome&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-green)
 
+<p align="center">
+  <img src="screenshots/live.png" width="220" alt="Live streams and mixtapes">
+  <img src="screenshots/following.png" width="220" alt="Following shows and history">
+  <img src="screenshots/search.png" width="220" alt="Search archived episodes">
+</p>
+
 ## Features
 
 - **Live Streams** — Listen to Channel 1 and Channel 2 with real-time show info and upcoming schedule
